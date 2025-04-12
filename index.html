@@ -88,7 +88,8 @@
     }
 
     async function getRecommendations(emotion) {
-        const response = await fetch("/recommend", {
+        const API_BASE_URL = "https://backend-app-tuke.azurewebsites.net"
+        const response = await fetch(API_BASE_URL, {
             method: 'POST',
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ emotion })
