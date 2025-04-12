@@ -87,21 +87,24 @@
         return top.label;
     }
 
-    async function getRecommendations(emotion) {
-        const API_BASE_URL = "https://tuke-backend-app-gpdzabandzfmerd4.northeurope-01.azurewebsites.net/"
-        const response = await fetch(API_BASE_URL, {
-            method: 'POST',
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ emotion })
-        });
+async function getRecommendations(emotion) {
+    // Добавьте /recommend в конце
+    const API_BASE_URL = "https://tuke-backend-app-...azurewebsites.net/recommend";
 
-        if (!response.ok) {
-            throw new Error("Flask API error");
-        }
+    const response = await fetch(API_BASE_URL, {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emotion })
+    });
 
-        const data = await response.json();
-        return data.tracks;
+    if (!response.ok) {
+        throw new Error("Flask API error");
     }
+
+    const data = await response.json();
+    return data.tracks;
+}
+
 
     analyzeButton.addEventListener("click", async () => {
         const text = textInput.value.trim();
