@@ -1,156 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Emotion Analyzer & Recommendations</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
-        }
-
-        h1 {
-            text-align: center;
-        }
-
-        textarea {
-            width: 100%;
-            min-height: 80px;
-            padding: 10px;
-            margin-bottom: 10px;
-            font-size: 1rem;
-            resize: none; /* Запрещаем изменение размера */
-        }
-
-        button {
-            padding: 10px 20px;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-
-        #resultArea {
-            margin-top: 30px;
-        }
-
-        .track-block {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .track-iframe {
-            margin-top: 10px;
-            display: flex;
-            justify-content: center;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Emotion Analyzer & Recommendations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="./main.js"></script>
 </head>
 <body>
-
-<h1>Emotion Analyzer & Recommendations</h1>
-
-<textarea id="textInput" placeholder="Type something..."></textarea>
-<br>
-<button id="analyzeButton">Analyze Emotion</button>
-
-<div id="resultArea"></div>
-
-<script>
-    const analyzeButton = document.getElementById("analyzeButton");
-    const textInput = document.getElementById("textInput");
-    const resultArea = document.getElementById("resultArea");
-
-    async function analyzeEmotion(text) {
-        const apiUrl = "https://emotion-api-service-788378649542.europe-central2.run.app/predict";
-        const payload = { instances: [text] };
-
-        const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            throw new Error("AI API error");
-        }
-
-        const data = await response.json();
-        const predictions = data.predictions[0];
-
-        let top = predictions[0];
-        for (let i = 1; i < predictions.length; i++) {
-            if (predictions[i].score > top.score) {
-                top = predictions[i];
-            }
-        }
-        return top.label;
-    }
-
-async function getRecommendations(emotion) {
-    // Добавьте /recommend в конце
-    const API_BASE_URL = "https://tuke-backend-app-gpdzabandzfmerd4.northeurope-01.azurewebsites.net/recommend";
-
-    const response = await fetch(API_BASE_URL, {
-        method: 'POST',
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emotion })
-    });
-
-    if (!response.ok) {
-        throw new Error("Flask API error");
-    }
-
-    const data = await response.json();
-    return data.tracks;
-}
-
-
-    analyzeButton.addEventListener("click", async () => {
-        const text = textInput.value.trim();
-        resultArea.innerHTML = "";
-
-        if (!text) {
-            resultArea.textContent = "Please enter some text.";
-            return;
-        }
-
-        resultArea.textContent = "Analyzing...";
-        analyzeButton.disabled = true;
-
-        try {
-            const emotion = await analyzeEmotion(text);
-            resultArea.innerHTML = `<h3>Top 10 tracks for emotion: <em>${emotion}</em></h3>`;
-
-            const tracks = await getRecommendations(emotion);
-
-            if (!tracks || tracks.length === 0) {
-                resultArea.innerHTML += `<p>No tracks found for this emotion.</p>`;
-                return;
-            }
-
-            tracks.forEach(track => {
-                const div = document.createElement("div");
-                div.className = "track-block";
-                div.innerHTML = `
-                    <strong>${track.track}</strong> by ${track.artist}<br>
-                    <div class="track-iframe">
-                        <iframe src="https://open.spotify.com/embed/track/${track.spotify_id}"
-                                width="400" height="200" frameborder="0"
-                                allowtransparency="true" allow="encrypted-media">
-                        </iframe>
-                    </div>
-                `;
-                resultArea.appendChild(div);
-            });
-
-        } catch (err) {
-            resultArea.textContent = "Error: " + err.message;
-        } finally {
-            analyzeButton.disabled = false;
-        }
-    });
-</script>
-
+  <div class="container">
+    <header>
+      <h1>Emotion Analyzer & Recommendations</h1>
+    </header>
+    <main>
+      <div id="inputSection">
+        <div class="input-area">
+          <textarea id="textInput" placeholder="Type something..."></textarea>
+        </div>
+        <button id="analyzeButton">Analyze Emotion</button>
+      </div>
+      
+      <div id="cardsSection" style="display: none;">
+        <div id="resultHeader"></div>
+        <div id="cardsContainer" class="cards-container"></div>
+        <button id="resetButton" class="reset-btn">Reload</button>
+      </div>
+    </main>
+    <div id="notification" class="notification"></div>
+  </div>
 </body>
 </html>
